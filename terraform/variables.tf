@@ -1,6 +1,6 @@
 # Région AWS
 variable "aws_region" {
-  description = "AWS region to deploy resources into"
+  description = "Paris"
   type        = string
   default     = "eu-west-3"
 }
@@ -13,14 +13,14 @@ variable "vpc_cidr" {
 }
 
 # CIDR du subnet public
-variable "public_subnet_cidr" {
+variable "public subnet cidr" {
   description = "CIDR block for the public subnet"
   type        = string
   default     = "10.0.1.0/24"
 }
 
 # Availability Zone du subnet
-variable "public_subnet_az" {
+variable "public subnet az" {
   description = "Availability Zone for the public subnet"
   type        = string
   default     = "eu-west-3a"
@@ -28,14 +28,14 @@ variable "public_subnet_az" {
 
 # Nom du VPC
 variable "vpc_name" {
-  description = "Name tag for the VPC"
+  description = "TEST-VPC
   type        = string
   default     = "my-vpc"
 }
 
 # Nom du subnet public
 variable "public_subnet_name" {
-  description = "Name tag for the public subnet"
+  description = "subnet-public"
   type        = string
   default     = "my-public-subnet"
 }
