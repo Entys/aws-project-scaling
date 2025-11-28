@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'ec2-node-exporter'
+    ec2_sd_configs:
+      - region: "eu-west-1"           # --> mettre la région AWS utilisée
+        port: 9100
+    relabel_configs:
+      # Ne garder que les instances taggées PrometheusScrape=true
+      - source_labels: [__meta_ec2_tag_PrometheusScrape]
+        regex: "true"
+        action: keep
+      # Optionnel : renommer cible pour avoir instance-id ou name
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance_id
+      - source_labels: [__meta_ec2_private_ip]
+        target_label: __address__
