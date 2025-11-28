@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+# Installer node_exporter
+USER="nodeusr"
+# créer un user non-login
+sudo useradd -M -r -s /sbin/nologin nodeusr || true
+
+wget https://github.com/prometheus/node_exporter/releases/download/v1.7.1/node_exporter-1.7.1.linux-amd64.tar.gz -O /tmp/node_exporter.tar.gz
+tar xzf /tmp/node_exporter.tar.gz -C /tmp
+sudo cp /tmp/node_exporter-1.7.1.linux-amd64/node_exporter /usr/local/bin/
+sudo chown nodeusr:nodeusr /usr/local/bin/node_exporter
+
+# Systemd service
+cat <<EOF | sudo tee /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+User=nodeusr
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now node_exporter
