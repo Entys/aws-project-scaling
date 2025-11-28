@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AWS Auto-scaling Demo</title>
-    <meta http-equiv="refresh" content="2">
     <style>
         * {
             margin: 0;
@@ -78,31 +77,6 @@
         .info-row .value {
             color: #333;
         }
-        
-        .refresh-notice {
-            text-align: center;
-            margin-top: 30px;
-            color: #666;
-            font-style: italic;
-        }
-        
-        .stress-button {
-            background: #FF4444;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.1em;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        
-        .stress-button:hover {
-            background: #CC0000;
-        }
     </style>
 </head>
 <body>
@@ -138,28 +112,6 @@
                 <span class="value">{{ timestamp }}</span>
             </div>
         </div>
-        
-        <button class="stress-button" onclick="stressTest()">
-            🔥 Stress CPU (Trigger Scale-up)
-        </button>
-        
-        <div class="refresh-notice">
-            ↻ Auto-refresh every 2 seconds
-        </div>
     </div>
-    
-    <script>
-        function stressTest() {
-            alert('⚡ Sending 10 CPU-intensive requests!\n\nWatch Grafana to see CPU spike and auto-scaling in action.');
-            
-            // Envoie 10 requêtes CPU-intensive
-            for(let i = 0; i < 10; i++) {
-                fetch('/cpu-intensive')
-                    .then(r => r.json())
-                    .then(data => console.log('Request', i+1, 'completed:', data))
-                    .catch(err => console.error('Error:', err));
-            }
-        }
-    </script>
 </body>
 </html>
