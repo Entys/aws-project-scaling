@@ -1,0 +1,14 @@
+[Unit]
+Description=Auto-scaling Flask App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/app/src
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/local/bin/gunicorn --workers 2 --bind 127.0.0.1:5000 app:app
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
