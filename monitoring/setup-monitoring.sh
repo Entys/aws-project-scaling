@@ -1,20 +1,20 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$BASE_DIR"
+# Mise à jour et installation des prérequis
+yum update -y
+yum install -y git docker
 
-# Vérifier Docker & docker-compose
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Docker non trouvé. Installation requise."
-  exit 1
-fi
+# Installation Docker Compose
+curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 
-# Créer les dossiers si manquants
-mkdir -p prometheus grafana/provisioning/datasources grafana/provisioning/dashboards grafana/dashboards
+# Démarrage de Docker
+systemctl enable docker
+systemctl start docker
 
-# Lancer docker-compose
-docker compose up -d
+# Cloner le repository GitHub contenant les fichiers nécessaires
+git clone https://github.com/ton-utilisateur/monitoring-setup.git /opt/monitoring
 
-echo "Prometheus (9090) et Grafana (3000) démarrés."
-echo "Accède à Grafana : http://<IP_PROMETHEUS>:3000 (admin/admin par défaut)"
+# Lancer Docker Compose
+cd /opt/monitoring
+docker-compose up -d
