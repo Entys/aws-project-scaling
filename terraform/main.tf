@@ -82,4 +82,45 @@ resource "aws_security_group" "ec2_sg" {
   tags = { Name = "sg-ec2" }
 }
 
+resource "aws_security_group" "monitoring_sg" {
+  name        = "sg-monitoring"
+  description = "Monitoring: allow access to monitoring ports"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Grafana"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_allowed_cidr]
+  }
+
+  ingress {
+    description = "Prometheus"
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_allowed_cidr]
+  }
+
+  ingress {
+    description = "Node exporter"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_allowed_cidr]
+  }
+
+  egress {
+    description = "All outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "sg-monitoring" }
+}
+
+
 
