@@ -33,3 +33,15 @@ variable "public_subnet_name" {
   type        = string
   default     = "my-public-subnet"
 }
+
+variable "allowed_ssh_cidr" {
+  description = "CIDR autorisé à se connecter en SSH"
+  type        = string
+  default     = ""
+}
+
+variable "monitoring_allowed_cidr" {
+  description = "CIDR autorisé à accéder aux ports de monitoring"
+  type        = string
+  default     = "0.0.0.0/0"
+}
