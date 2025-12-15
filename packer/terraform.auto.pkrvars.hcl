@@ -1,6 +1,6 @@
 app_version      = "1.0.0"
 aws_region       = "eu-west-1"
 instance_type    = "t2.micro"
-base_ami_owner   = "111111111111"
+base_ami_owner   = "136693071363"
 base_ami_filter  = "debian-12-amd64-*"
 ssh_username     = "admin"

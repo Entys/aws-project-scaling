@@ -17,7 +17,7 @@ variable "instance_type" {
 variable "base_ami_owner" {
   type        = string
   description = "AWS account ID du propriétaire de l'AMI de base"
-  default     = "111111111111"
+  default     = "136693071363"
 }
 
 variable "base_ami_filter" {
