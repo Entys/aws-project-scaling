@@ -108,7 +108,7 @@ resource "aws_launch_template" "app_lt" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Environment = "prod"  # Name sera défini dynamiquement par l'ASG
+      Environment = "prod"
     }
   }
 }
