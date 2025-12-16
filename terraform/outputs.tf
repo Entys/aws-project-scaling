@@ -23,7 +23,13 @@ output "public_subnet_az" {
   value       = aws_subnet.public_subnet.availability_zone
 }
 
-output "alb_sg_id" { value = aws_security_group.alb_sg.id }
-output "ec2_sg_id" { value = aws_security_group.ec2_sg.id }
-output "monitoring_sg_id" { value = aws_security_group.monitoring_sg.id }
+output "private_subnet_id" {
+  value = aws_subnet.private_subnet.id
+}
 
+output "private_subnet_cidr" {
+  value = aws_subnet.private_subnet.cidr_block
+}
+output "alb_sg_id"        { value = aws_security_group.alb_sg.id }
+output "ec2_sg_id"        { value = aws_security_group.ec2_sg.id }
+output "monitoring_sg_id" { value = aws_security_group.monitoring_sg.id }

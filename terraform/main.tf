@@ -1,5 +1,3 @@
-
-
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -10,19 +8,12 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.public_subnet_az
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = var.public_subnet_name
-  }
-}
+# -------------------------
+# Security Groups
+# -------------------------
 
 resource "aws_security_group" "alb_sg" {
-  name        = "sg-alb"
+  name        = "AEH_sg_alb"
   description = "ALB: allow inbound HTTP from Internet"
   vpc_id      = aws_vpc.main.id
 
@@ -42,15 +33,14 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "sg-alb" }
+  tags = { Name = "AEH-sg-alb" }
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "sg-ec2"
-  description = "EC2: allow HTTP only from ALB, optional SSH"
+  name        = "AEH_sg_ec2"
+  description = "EC2: allow HTTP only from ALB + SSH from allowed CIDR"
   vpc_id      = aws_vpc.main.id
 
-  # HTTP depuis ALB uniquement
   ingress {
     description     = "HTTP from ALB"
     from_port       = 80
@@ -59,16 +49,13 @@ resource "aws_security_group" "ec2_sg" {
     security_groups = [aws_security_group.alb_sg.id]
   }
 
-  # SSH optionnel depuis TON IP (si variable non vide)
-  dynamic "ingress" {
-    for_each = var.allowed_ssh_cidr != "" ? [1] : []
-    content {
-      description = "SSH from allowed CIDR"
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = [var.allowed_ssh_cidr]
-    }
+  # SSH activé (mets allowed_ssh_cidr="TON_IP/32")
+  ingress {
+    description = "SSH from allowed CIDR"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   egress {
@@ -79,12 +66,12 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "sg-ec2" }
+  tags = { Name = "AEH-sg-ec2" }
 }
 
 resource "aws_security_group" "monitoring_sg" {
-  name        = "sg-monitoring"
-  description = "Monitoring: allow access to monitoring ports"
+  name        = "AEH_sg_monitoring"
+  description = "Monitoring: allow Grafana/Prometheus access"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -119,8 +106,82 @@ resource "aws_security_group" "monitoring_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "sg-monitoring" }
+  tags = { Name = "AEH-sg-monitoring" }
 }
 
+# -------------------------
+# Subnets
+# -------------------------
 
+resource "aws_subnet" "public_subnet" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidr
+  availability_zone       = var.public_subnet_az
+  map_public_ip_on_launch = true
 
+  tags = {
+    Name = var.public_subnet_name
+  }
+}
+
+resource "aws_subnet" "private_subnet" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_subnet_cidr
+  availability_zone       = var.private_subnet_az
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name = var.private_subnet_name
+  }
+}
+
+# -------------------------
+# Internet Gateway + Public RT
+# -------------------------
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+  tags   = { Name = "main-igw" }
+}
+
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = { Name = "public-rt" }
+}
+
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+# -------------------------
+# Private RT
+# -------------------------
+
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.main.id
+  tags   = { Name = "private-rt" }
+}
+
+# -------------------------
+# Main route table + tag default
+# -------------------------
+
+resource "aws_main_route_table_association" "set_main_rt" {
+  vpc_id         = aws_vpc.main.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_default_route_table" "default" {
+  default_route_table_id = aws_vpc.main.default_route_table_id
+
+  tags = {
+    Name = "default-rtb-do-not-use"
+  }
+}
