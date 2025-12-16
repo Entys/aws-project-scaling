@@ -108,8 +108,7 @@ resource "aws_launch_template" "app_lt" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name        = "app-instance"
-      Environment = "prod"
+      Environment = "prod"  # Name sera défini dynamiquement par l'ASG
     }
   }
 }
@@ -130,4 +129,16 @@ resource "aws_autoscaling_group" "app_asg" {
   }
 
   health_check_type = "EC2"
+
+  tag {
+    key                 = "Name"
+    value               = "app-instance"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Environment"
+    value               = "prod"
+    propagate_at_launch = true
+  }
 }
