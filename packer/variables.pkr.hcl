@@ -31,3 +31,14 @@ variable "ssh_username" {
   description = "Username SSH de l'AMI de base"
   default     = "admin"
 }
+
+# AJOUTE CES LIGNES
+variable "subnet_id" {
+  type        = string
+  description = "ID du subnet où builder l'AMI"
+}
+
+variable "security_group_id" {
+  type        = string
+  description = "ID du security group pour le build"
+}

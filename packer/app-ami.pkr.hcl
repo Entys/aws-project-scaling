@@ -11,6 +11,10 @@ source "amazon-ebs" "app" {
   ami_name      = "autoscaling-demo-${var.app_version}-{{timestamp}}"
   instance_type = var.instance_type
   region        = var.aws_region
+
+  subnet_id                   = var.subnet_id
+  security_group_id           = var.security_group_id
+  associate_public_ip_address = true
   
   source_ami_filter {
     filters = {
@@ -36,15 +40,26 @@ source "amazon-ebs" "app" {
 build {
   sources = ["source.amazon-ebs.app"]
   
-  provisioner "file" {
-    source      = "../app/"
-    destination = "/tmp/app"
+  # AJOUTE CE PROVISIONER AVANT le file
+  provisioner "shell" {
+    inline = [
+      "sudo rm -rf /tmp/packer-app",
+      "mkdir -p /tmp/packer-app"
+    ]
   }
   
+  # Upload l'application
+  provisioner "file" {
+    source      = "../app/"
+    destination = "/tmp/packer-app"
+  }
+  
+  # Exécute le script d'installation
   provisioner "shell" {
     script = "./scripts/install-app.sh"
   }
   
+  # Reload nginx
   provisioner "shell" {
     inline = [
       "sudo systemctl reload nginx",
