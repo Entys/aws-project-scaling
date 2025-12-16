@@ -72,11 +72,11 @@ variable "private_subnet_name" {
 variable "allowed_ssh_cidr" {
   description = "CIDR autorisé pour SSH (ex: votre IP publique /32)"
   type        = string
-  default = "82.96.167.147/32"
+  default = "0.0.0.0/0"
 }
 
 variable "monitoring_allowed_cidr" {
   description = "CIDR autorisé pour accéder au monitoring (Grafana/Prometheus)"
   type        = string
-  default = "82.96.167.147/32"
+  default = "0.0.0.0/0"
 }

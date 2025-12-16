@@ -98,6 +98,14 @@ resource "aws_security_group" "monitoring_sg" {
     cidr_blocks = [var.monitoring_allowed_cidr]
   }
 
+    ingress {
+    description = "SSH from allowed CIDR"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_ssh_cidr]
+  }
+
   egress {
     description = "All outbound"
     from_port   = 0
