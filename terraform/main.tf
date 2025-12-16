@@ -104,6 +104,10 @@ resource "aws_launch_template" "app_lt" {
   vpc_security_group_ids = [
     data.aws_security_group.app_sg.id
   ]
+  
+  user_data = base64encode(file(
+    "C:/Users/aurel/Mon Drive/Ecoles/Ynov (Expert Cyber) 2024-2026/Master_1_2025_2026/1 - Infrastructure Cloud/Projet/aws-project-scaling/monitoring/installnode-exporter.sh"
+  ))
 
   tag_specifications {
     resource_type = "instance"
