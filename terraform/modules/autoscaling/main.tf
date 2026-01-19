@@ -2,11 +2,6 @@ locals {
   name = var.name != "" ? var.name : "app"
 }
 
-# -------------------------
-# Security Group EC2 (instances ASG)
-# - HTTP 80 uniquement depuis le SG de l'ALB
-# - SSH 22 depuis ton IP (allowed_ssh_cidr)
-# -------------------------
 resource "aws_security_group" "ec2" {
   name        = "${local.name}-ec2-sg"
   description = "EC2 instances in ASG: HTTP from ALB SG + SSH from allowed CIDR"
@@ -36,14 +31,9 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${local.name}-ec2-sg"
-  }
+  tags = { Name = "${local.name}-ec2-sg" }
 }
 
-# -------------------------
-# Launch Template
-# -------------------------
 resource "aws_launch_template" "this" {
   name_prefix   = "${local.name}-lt-"
   image_id      = var.ami_id
@@ -51,32 +41,23 @@ resource "aws_launch_template" "this" {
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
-  # IMDSv2 recommandé
   metadata_options {
     http_tokens = "required"
   }
 
-  # Bootstrap (optionnel)
   user_data = var.user_data != "" ? base64encode(var.user_data) : null
 
   tag_specifications {
     resource_type = "instance"
-    tags = {
-      Name = "${local.name}-asg-instance"
-    }
+    tags = { Name = "${local.name}-asg-instance" }
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = {
-      Name = "${local.name}-asg-volume"
-    }
+    tags = { Name = "${local.name}-asg-volume" }
   }
 }
 
-# -------------------------
-# Auto Scaling Group
-# -------------------------
 resource "aws_autoscaling_group" "this" {
   name                = "${local.name}-asg"
   min_size            = var.min_size
@@ -84,10 +65,8 @@ resource "aws_autoscaling_group" "this" {
   desired_capacity    = var.desired_capacity
   vpc_zone_identifier = var.private_subnet_ids
 
-  # Intégration ALB via Target Group
   target_group_arns = [var.target_group_arn]
 
-  # Health check via ALB
   health_check_type         = "ELB"
   health_check_grace_period = 120
 
@@ -96,7 +75,6 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
 
-  # Tags propagés aux instances
   tag {
     key                 = "Name"
     value               = "${local.name}-asg-instance"

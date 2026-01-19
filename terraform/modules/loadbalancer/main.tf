@@ -1,8 +1,3 @@
-
-
-# -------------------------
-# Target groups + Load balancer
-# -------------------------
 resource "aws_lb" "this" {
   name               = "${var.name}-alb"
   load_balancer_type = "application"

@@ -16,8 +16,7 @@ variable "vpc_id" {
 
 variable "public_subnet_ids" {
   type        = list(string)
-  description = "List of public subnet IDs"
-  default = [ "eu-west-3a,eu-west-3b" ]
+  description = "List of public subnet IDs (must be >=2 in different AZ for ALB)"
 }
 
 variable "target_port" {
@@ -31,5 +30,3 @@ variable "health_check_path" {
   description = "Health check path"
   default     = "/"
 }
-
-
