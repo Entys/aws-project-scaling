@@ -46,7 +46,7 @@ systemctl enable node_exporter
 systemctl start node_exporter
 
 # Clone projet & supprimer les dossiers inutiles
-git clone https://github.com/Entys/aws-project-scaling.git /opt/aws-project-scaling
+git clone https://github.com/Entys/aws-project-scaling.git --branch monitoring /opt/aws-project-scaling
 
 chown -R ec2-user:ec2-user /opt/aws-project-scaling
 
