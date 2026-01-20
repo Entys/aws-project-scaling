@@ -1,33 +1,28 @@
-################################
 # Provider
-################################
+#=========================================================
 provider "aws" {
   region = "eu-west-3"
 }
 
-################################
 # Variables locales (infra imposée)
-################################
+#=========================================================
 
 locals {
-  vpc_id    = "vpc-03fd1ebb41b40987f"
-  subnet_id = "subnet-01e973e9c44864b90"
+  vpc_id    = "vpc-0ca8aacebed836262"                                       
+# à modifier --------------------------------------------------------------------------------
+  subnet_id = "subnet-0b44df42566d7a2e4"
+# à modifier --------------------------------------------------------------------------------
 }
 
-################################
 # Security Groups EXISTANTS
-################################
+# Dans variables --------------------------------------------------------------------------------
+#=========================================================
 data "aws_security_group" "monitoring_sg" {
-  id = "sg-01e7e6857e2fe1293"
+  id = "sg-01a09f8c4347acaa3"
 }
 
-data "aws_security_group" "app_sg" {
-  id = "sg-02430ebfae8a782b9"
-}
-
-################################
 # IAM Role pour Prometheus (EC2 SD)
-################################
+#=========================================================
 resource "aws_iam_role" "prometheus_role" {
   name = "prometheus-ec2-sd-role"
 
@@ -66,16 +61,33 @@ resource "aws_iam_instance_profile" "prometheus_profile" {
 ################################
 # Key Pair
 ################################
-resource "aws_key_pair" "monitoring_key" {
-  key_name   = "monitoring-key"
-  public_key = file("C:/Users/aurel/.ssh/id_rsa.pub")
+#resource "aws_key_pair" "monitoring_key" {
+#  key_name   = "monitoring-key"
+#  public_key = file("C:/Users/aurel/.ssh/id_rsa.pub")
+#}
+
+# Génération clé RSA
+#=========================================================
+resource "tls_private_key" "monitoring_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
-################################
+resource "aws_key_pair" "monitoring_key" {
+  key_name   = "monitoring-key"
+  public_key = tls_private_key.monitoring_key.public_key_openssh
+}
+
+resource "local_file" "monitoring_private_key" {
+  filename        = "${path.module}/monitoring-key.pem"
+  content         = tls_private_key.monitoring_key.private_key_pem
+  file_permission = "0600"
+}
+
 # EC2 Monitoring (Prometheus + Grafana)
-################################
+#=========================================================
 resource "aws_instance" "monitoring" {
-  ami                         = "ami-078abd88811000d7e"
+  ami                         = "ami-0f95dedaf2f938d49"
   instance_type               = "t2.micro"
   subnet_id                   = local.subnet_id
   key_name                    = aws_key_pair.monitoring_key.key_name
@@ -84,7 +96,7 @@ resource "aws_instance" "monitoring" {
   associate_public_ip_address = true
 
   user_data = file(
-    "C:/Users/aurel/Mon Drive/Ecoles/Ynov (Expert Cyber) 2024-2026/Master_1_2025_2026/1 - Infrastructure Cloud/Projet/aws-project-scaling/monitoring/setup-monitoring.sh"
+    "../monitoring/setup-monitoring.sh"
   )
 
   tags = {
@@ -93,119 +105,3 @@ resource "aws_instance" "monitoring" {
   }
 }
 
-################################
-# Launch Template pour EC2 applicatives
-################################
-resource "aws_launch_template" "app_lt" {
-  name_prefix   = "app-lt-"
-  image_id      = "ami-0491cc5da7e71f4b7"
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.monitoring_key.key_name
-
-  vpc_security_group_ids = [
-    data.aws_security_group.app_sg.id
-  ]
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Environment = "prod"
-    }
-  }
-}
-
-################################
-# Auto Scaling Group
-################################
-resource "aws_autoscaling_group" "app_asg" {
-  name                = "app-asg"
-  min_size            = 1
-  max_size            = 5
-  desired_capacity    = 1
-  vpc_zone_identifier = [local.subnet_id]
-
-  launch_template {
-    id      = aws_launch_template.app_lt.id
-    version = "$Latest"
-  }
-
-  health_check_type = "EC2"
-
-  tag {
-    key                 = "Name"
-    value               = "app-instance"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Environment"
-    value               = "prod"
-    propagate_at_launch = true
-  }
-}
-
-################################
-# Scaling Policies
-################################
-
-resource "aws_autoscaling_policy" "scale_out" {
-  name                   = "cpu-scale-out"
-  autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  adjustment_type        = "ChangeInCapacity"
-  scaling_adjustment     = 1
-  cooldown               = 300
-}
-
-resource "aws_autoscaling_policy" "scale_in" {
-  name                   = "cpu-scale-in"
-  autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  adjustment_type        = "ChangeInCapacity"
-  scaling_adjustment     = -1
-  cooldown               = 300
-}
-
-################################
-# CloudWatch Alarm - Scale OUT
-################################
-
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "asg-cpu-high"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 30
-  statistic           = "Average"
-  threshold           = 50
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.app_asg.name
-  }
-
-  alarm_actions = [
-    aws_autoscaling_policy.scale_out.arn
-  ]
-}
-
-################################
-# CloudWatch Alarm - Scale IN
-################################
-
-resource "aws_cloudwatch_metric_alarm" "cpu_low" {
-  alarm_name          = "asg-cpu-low"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 30
-  statistic           = "Average"
-  threshold           = 30
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.app_asg.name
-  }
-
-  alarm_actions = [
-    aws_autoscaling_policy.scale_in.arn
-  ]
-}

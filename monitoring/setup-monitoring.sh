@@ -45,22 +45,21 @@ systemctl daemon-reload
 systemctl enable node_exporter
 systemctl start node_exporter
 
-################################
-# Clone projet
-################################
-git clone https://github.com/Oreo81/aws-project-scaling.git /opt/aws-project-scaling
+# Clone projet & supprimer les dossiers inutiles
+git clone https://github.com/Entys/aws-project-scaling.git /opt/aws-project-scaling
 
 chown -R ec2-user:ec2-user /opt/aws-project-scaling
 
-################################
+for dir in /opt/aws-project-scaling/*; do
+    [ "$dir" = "monitoring" ] && continue
+    rm -rf "$dir"
+done
+
 # FIX permissions Grafana
-################################
 mkdir -p /opt/aws-project-scaling/monitoring/grafana/data
 chown -R 472:472 /opt/aws-project-scaling/monitoring/grafana/data
 chmod -R 775 /opt/aws-project-scaling/monitoring/grafana/data
 
-################################
 # Lancer monitoring stack
-################################
 cd /opt/aws-project-scaling/monitoring
 docker-compose up -d
