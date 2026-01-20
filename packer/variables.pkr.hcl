@@ -1,44 +1,43 @@
 variable "app_version" {
   type        = string
-  description = "Version de l'application"
+  description = "App version"
 }
 
 variable "aws_region" {
   type        = string
-  description = "Région AWS où créer l'AMI"
+  description = "AWS region where the AMI is"
 }
 
 variable "instance_type" {
   type        = string
-  description = "Type d'instance EC2 pour le build"
+  description = "EC2 instance type"
   default     = "t2.micro"
 }
 
 variable "base_ami_owner" {
   type        = string
-  description = "AWS account ID du propriétaire de l'AMI de base"
+  description = "AWS ID"
   default     = "136693071363"
 }
 
 variable "base_ami_filter" {
   type        = string
-  description = "Filtre pour sélectionner l'AMI de base"
+  description = "Filter AMI"
   default     = "debian-12-amd64-*"
 }
 
 variable "ssh_username" {
   type        = string
-  description = "Username SSH de l'AMI de base"
+  description = "SSH username AMI"
   default     = "admin"
 }
 
-# AJOUTE CES LIGNES
 variable "subnet_id" {
   type        = string
-  description = "ID du subnet où builder l'AMI"
+  description = "ID of the subnet where AMI"
 }
 
-variable "security_group_id" {
-  type        = string
-  description = "ID du security group pour le build"
+variable "security_group_ids" {
+  type        = list(string)
+  description = "List of security group IDs"
 }

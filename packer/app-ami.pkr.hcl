@@ -13,7 +13,7 @@ source "amazon-ebs" "app" {
   region        = var.aws_region
 
   subnet_id                   = var.subnet_id
-  security_group_id           = var.security_group_id
+  security_group_ids           = var.security_group_ids
   associate_public_ip_address = true
   
   source_ami_filter {
@@ -40,7 +40,6 @@ source "amazon-ebs" "app" {
 build {
   sources = ["source.amazon-ebs.app"]
   
-  # AJOUTE CE PROVISIONER AVANT le file
   provisioner "shell" {
     inline = [
       "sudo rm -rf /tmp/packer-app",
@@ -48,18 +47,19 @@ build {
     ]
   }
   
-  # Upload l'application
   provisioner "file" {
     source      = "../app/"
     destination = "/tmp/packer-app"
   }
   
-  # Exécute le script d'installation
   provisioner "shell" {
     script = "./scripts/install-app.sh"
   }
+
+    provisioner "shell" {
+    script = "./scripts/install-nodeExporter.sh"
+  }
   
-  # Reload nginx
   provisioner "shell" {
     inline = [
       "sudo systemctl reload nginx",
