@@ -31,10 +31,9 @@ module "loadbalancer" {
 module "autoscaling" {
   source = "./modules/autoscaling"
 
-  name             = var.name
-  vpc_id           = module.networking.vpc_id
-  alb_sg_id        = module.networking.alb_sg_id
-  allowed_ssh_cidr = var.allowed_ssh_cidr
+  name = var.name
+
+  ec2_sg_id = module.networking.ec2_sg_id
 
   private_subnet_ids = module.networking.private_subnet_ids
   target_group_arn   = module.loadbalancer.target_group_arn

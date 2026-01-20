@@ -14,8 +14,8 @@ provider "aws" {
 }
 
 # module "monitoring" {
- # source = "./modules/monitoring"
- # count  = var.enable_monitoring ? 1 : 0
+# source = "./modules/monitoring"
+# count  = var.enable_monitoring ? 1 : 0
 
-  # inputs nécessaires (vpc, subnets, tags, etc.)
+# inputs nécessaires (vpc, subnets, tags, etc.)
 # }

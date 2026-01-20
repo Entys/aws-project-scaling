@@ -8,7 +8,3 @@ output "launch_template_id" {
   value       = aws_launch_template.this.id
 }
 
-output "ec2_sg_id" {
-  description = "Security Group ID attached to ASG instances"
-  value       = aws_security_group.ec2.id
-}

@@ -2,44 +2,15 @@ locals {
   name = var.name != "" ? var.name : "app"
 }
 
-resource "aws_security_group" "ec2" {
-  name        = "${local.name}-ec2-sg"
-  description = "EC2 instances in ASG: HTTP from ALB SG + SSH from allowed CIDR"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    description     = "HTTP from ALB"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [var.alb_sg_id]
-  }
-
-  ingress {
-    description = "SSH from allowed CIDR"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
-  }
-
-  egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "${local.name}-ec2-sg" }
-}
-
+# -------------------------
+# Launch Template
+# -------------------------
 resource "aws_launch_template" "this" {
   name_prefix   = "${local.name}-lt-"
   image_id      = var.ami_id
   instance_type = var.instance_type
 
-  vpc_security_group_ids = [aws_security_group.ec2.id]
+  vpc_security_group_ids = [var.ec2_sg_id]
 
   metadata_options {
     http_tokens = "required"
@@ -49,15 +20,25 @@ resource "aws_launch_template" "this" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = { Name = "${local.name}-asg-instance" }
+    tags = {
+      Name        = "${local.name}-asg-instance"
+      Environment = "prod"
+    }
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = { Name = "${local.name}-asg-volume" }
+    tags = {
+      Name        = "${local.name}-asg-volume"
+      Environment = "prod"
+    }
   }
 }
 
+
+# -------------------------
+# Auto Scaling Group
+# -------------------------
 resource "aws_autoscaling_group" "this" {
   name                = "${local.name}-asg"
   min_size            = var.min_size
@@ -65,8 +46,10 @@ resource "aws_autoscaling_group" "this" {
   desired_capacity    = var.desired_capacity
   vpc_zone_identifier = var.private_subnet_ids
 
+  # Intégration ALB via Target Group
   target_group_arns = [var.target_group_arn]
 
+  # Health check via ALB
   health_check_type         = "ELB"
   health_check_grace_period = 120
 
@@ -86,4 +69,60 @@ resource "aws_autoscaling_group" "this" {
     value               = local.name
     propagate_at_launch = true
   }
+}
+
+# -------------------------
+# Scaling Policies
+# -------------------------
+resource "aws_autoscaling_policy" "scale_out" {
+  name                   = "${local.name}-cpu-scale-out"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = 1
+  cooldown               = 300
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  name                   = "${local.name}-cpu-scale-in"
+  autoscaling_group_name = aws_autoscaling_group.this.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = -1
+  cooldown               = 300
+}
+
+# -------------------------
+# CloudWatch Alarms
+# -------------------------
+resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+  alarm_name          = "${local.name}-asg-cpu-high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 30
+  statistic           = "Average"
+  threshold           = 50
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.this.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.scale_out.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_low" {
+  alarm_name          = "${local.name}-asg-cpu-low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 30
+  statistic           = "Average"
+  threshold           = 30
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.this.name
+  }
+
+  alarm_actions = [aws_autoscaling_policy.scale_in.arn]
 }

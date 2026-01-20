@@ -5,17 +5,13 @@ variable "name" {
 }
 
 variable "vpc_id" {
-  description = "VPC ID where the EC2 SG will be created"
+  description = "VPC ID (kept for compatibility, not used directly here)"
   type        = string
+  default     = ""
 }
 
-variable "alb_sg_id" {
-  description = "Security Group ID of the ALB (allowed source for HTTP)"
-  type        = string
-}
-
-variable "allowed_ssh_cidr" {
-  description = "CIDR allowed to SSH to instances (your public IP/32)"
+variable "ec2_sg_id" {
+  description = "Security Group ID attached to ASG instances (from networking)"
   type        = string
 }
 
@@ -37,7 +33,7 @@ variable "ami_id" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.micro"
+  default     = "t2.micro"
 }
 
 variable "min_size" {

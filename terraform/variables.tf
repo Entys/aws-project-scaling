@@ -13,14 +13,14 @@ variable "vpc_cidr" { type = string }
 variable "vpc_name" { type = string }
 
 variable "public_subnet_cidrs" { type = list(string) }
-variable "public_subnet_azs"   { type = list(string) }
+variable "public_subnet_azs" { type = list(string) }
 variable "public_subnet_names" {
   type    = list(string)
   default = ["AEH-public-a", "AEH-public-b"]
 }
 
 variable "private_subnet_cidrs" { type = list(string) }
-variable "private_subnet_azs"   { type = list(string) }
+variable "private_subnet_azs" { type = list(string) }
 variable "private_subnet_names" {
   type    = list(string)
   default = ["AEH-private-a", "AEH-private-b"]
@@ -28,7 +28,7 @@ variable "private_subnet_names" {
 
 # --- Sécurité ---
 variable "monitoring_allowed_cidr" { type = string }
-variable "allowed_ssh_cidr"        { type = string }
+variable "allowed_ssh_cidr" { type = string }
 
 # --- Load balancer ---
 variable "target_port" {
@@ -46,7 +46,7 @@ variable "ami_id" { type = string }
 
 variable "instance_type" {
   type    = string
-  default = "t3.micro"
+  default = "t2.micro"
 }
 
 variable "min_size" {
