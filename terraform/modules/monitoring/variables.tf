@@ -11,9 +11,10 @@ variable "subnet_id" {
   type = string
 }
 
-variable "monitoring_sg_ids" {
-  type = list(string)
+variable "monitoring_sg_id" {
+  type = string
 }
+
 
 
 
