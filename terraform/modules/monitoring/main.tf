@@ -4,12 +4,6 @@ provider "aws" {
   region = var.region
 }
 
-# Security Group existant
-#----------------------------------------
-data "aws_security_group" "monitoring_sg" {
-  id = var.monitoring_sg_id
-}
-
 # IAM Role Prometheus
 #----------------------------------------
 resource "aws_iam_role" "prometheus_role" {
@@ -72,7 +66,7 @@ resource "aws_instance" "monitoring" {
   instance_type               = "t2.micro"
   subnet_id                   = var.subnet_id
   key_name                    = aws_key_pair.monitoring_key.key_name
-  vpc_security_group_ids      = [data.aws_security_group.monitoring_sg.id]
+  vpc_security_group_ids      = var.monitoring_sg_ids
   iam_instance_profile        = aws_iam_instance_profile.prometheus_profile.name
   associate_public_ip_address = true
 
