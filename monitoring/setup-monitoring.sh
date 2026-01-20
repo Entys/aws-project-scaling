@@ -50,11 +50,6 @@ git clone https://github.com/Entys/aws-project-scaling.git --branch monitoring /
 
 chown -R ec2-user:ec2-user /opt/aws-project-scaling
 
-for dir in /opt/aws-project-scaling/*; do
-    [ "$dir" = "monitoring" ] && continue
-    rm -rf "$dir"
-done
-
 # FIX permissions Grafana
 mkdir -p /opt/aws-project-scaling/monitoring/grafana/data
 chown -R 472:472 /opt/aws-project-scaling/monitoring/grafana/data
