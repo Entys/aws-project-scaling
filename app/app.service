@@ -1,0 +1,12 @@
+[Unit]
+Description=Auto-scaling Flask App
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/app/src
+ExecStart=/usr/bin/python3 /opt/app/src/app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
