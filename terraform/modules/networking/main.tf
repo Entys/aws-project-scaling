@@ -103,6 +103,14 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = [var.allowed_ssh_cidr]
   }
 
+    ingress {
+    description = "Node exporter"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_allowed_cidr]
+  }
+
   egress {
     description = "All outbound"
     from_port   = 0

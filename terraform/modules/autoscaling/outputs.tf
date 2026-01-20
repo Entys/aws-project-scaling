@@ -8,3 +8,13 @@ output "launch_template_id" {
   value       = aws_launch_template.this.id
 }
 
+output "key_pair_name" {
+  description = "AWS Key Pair name created for SSH"
+  value       = aws_key_pair.ec2_key.key_name
+}
+
+output "private_key_pem_path" {
+  description = "Local path where the private key PEM is written"
+  value       = local_file.ec2_private_key.filename
+  sensitive   = true
+}

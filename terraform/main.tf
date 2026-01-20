@@ -31,15 +31,15 @@ module "loadbalancer" {
 module "autoscaling" {
   source = "./modules/autoscaling"
 
-  name = var.name
+  name          = var.name
+  ami_id        = var.ami_id
+  instance_type = var.instance_type
 
-  ec2_sg_id = module.networking.ec2_sg_id
+  ec2_sg_id  = module.networking.ec2_sg_id
+  subnet_ids = module.networking.public_subnet_ids
 
-  private_subnet_ids = module.networking.private_subnet_ids
-  target_group_arn   = module.loadbalancer.target_group_arn
+  target_group_arn = module.loadbalancer.target_group_arn
 
-  ami_id           = var.ami_id
-  instance_type    = var.instance_type
   min_size         = var.min_size
   desired_capacity = var.desired_capacity
   max_size         = var.max_size

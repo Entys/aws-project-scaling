@@ -68,3 +68,7 @@ variable "user_data" {
   type    = string
   default = ""
 }
+variable "ec2_key_name" {
+  type    = string
+  default = null
+}
