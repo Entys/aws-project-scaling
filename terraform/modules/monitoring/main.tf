@@ -1,9 +1,3 @@
-# Provider
-#----------------------------------------
-provider "aws" {
-  region = var.region
-}
-
 # IAM Role Prometheus
 #----------------------------------------
 resource "aws_iam_role" "prometheus_role" {

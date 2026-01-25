@@ -56,7 +56,7 @@ build {
     script = "./scripts/install-app.sh"
   }
 
-    provisioner "shell" {
+  provisioner "shell" {
     script = "./scripts/install-nodeExporter.sh"
   }
   

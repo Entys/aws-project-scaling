@@ -1,3 +1,18 @@
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
 module "networking" {
   source = "./modules/networking"
 
@@ -34,6 +49,8 @@ module "autoscaling" {
   name          = var.name
   ami_id        = var.ami_id
   instance_type = var.instance_type
+  vpc_id        = module.networking.vpc_id
+
 
   ec2_sg_id  = module.networking.ec2_sg_id
   subnet_ids = module.networking.public_subnet_ids
@@ -44,4 +61,13 @@ module "autoscaling" {
   desired_capacity = var.desired_capacity
   max_size         = var.max_size
   user_data        = var.user_data
+}
+
+module "monitoring" {
+  source = "./modules/monitoring"
+  
+  region            = var.aws_region
+  vpc_id            = module.networking.vpc_id
+  subnet_id         = module.networking.public_subnet_ids[0]
+  monitoring_sg_ids = module.networking.monitoring_sg_ids
 }

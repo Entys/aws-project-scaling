@@ -78,3 +78,8 @@ variable "alarm_evaluation_periods" {
   type        = number
   default     = 2
 }
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}

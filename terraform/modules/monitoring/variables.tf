@@ -14,7 +14,3 @@ variable "subnet_id" {
 variable "monitoring_sg_ids" {
   type = list(string)
 }
-
-
-
-
